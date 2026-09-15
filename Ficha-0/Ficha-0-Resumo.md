@@ -28,7 +28,8 @@ A grelha tem 9 linhas. Vamos numerar as linhas de cima para baixo por um "limiar
 
 Ou seja, a regra é simplesmente:
 
-$$\text{célula}(\text{digito}, \text{linha}) = \begin{cases} \text{'*'}, & \text{se } \text{digito} \ge \text{linha} \\ \text{'-'}, & \text{caso contrário} \end{cases}$$
+célula(digito, linha) = '*' se digito >= linha, senão '-'
+
 ### Verificação com o dígito `5` (segunda coluna do exemplo `251`):
 * **Linhas 9, 8, 7, 6** $\rightarrow$ $5 \ge \text{linha}$? **Não** $\rightarrow$ `-`
 * **Linha 5** $\rightarrow$ $5 \ge 5$? **Sim** $\rightarrow$ `*`
