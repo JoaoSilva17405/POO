@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DADOS>
+  <PESSOA>
+    <NOME>Jose Miguel</NOME>
+    <IDADE>18</IDADE>
+  </PESSOA>
+  <PESSOA>
+    <NOME>Pedrito De Portugal</NOME>
+    <IDADE>65</IDADE>
+  </PESSOA>
+</DADOS>

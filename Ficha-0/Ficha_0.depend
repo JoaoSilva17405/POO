@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1789375289 source:c:\users\fmorgado\onedrive\ambiente de trabalho\ficha_0\main.cpp
+	<iostream>
+	<string>
+
+1789430630 source:f:\poo\ficha-0\main.cpp
+	<iostream>
+	<cstdio>
+

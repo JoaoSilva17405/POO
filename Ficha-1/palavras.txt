@@ -1,0 +1,8 @@
+A programacao orientada a objetos e um paradigma fundamental
+As estruturas de dados permitem organizar a informacao
+Os algoritmos de ordenacao comparam elementos e efetuam trocas
+Bubble Selection Insertion Shell Quick Merge sao algoritmos
+A complexidade computacional mede o desempenho dos algoritmos
+Viseu Politecnico Engenharia Informatica programacao
+palavra palavra repetida repetida teste teste
+extraordinariamente responsabilidade desenvolvimento implementacao
