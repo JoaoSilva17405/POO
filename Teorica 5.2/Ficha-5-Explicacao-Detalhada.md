@@ -4,6 +4,13 @@
 > Ficha 5. **Não assume conhecimento prévio**: cada conceito (classe, ponteiro, `this`,
 > herança, polimorfismo, encapsulamento, inclusão circular, ...) é explicado antes de ser
 > usado. Se já conheces algum, salta essa secção.
+>
+> **Atualização (24/10/2026):** o documento descreve agora a versão atual do projeto,
+> que acrescenta à base do professor a **saída do peixe do aquário** e a **remoção por
+> número de série**. Os nomes usados são os do código: `QueroSair`, `RemoverParaAssar`,
+> `RemoverID`, `Pertence`, `EstouGordo`, `Ja_Avisei_Quero_Sair`, `GetID`, `GetPeso`. A
+> secção 8 explica essa extensão e as decisões tomadas. Algumas sugestões da versão
+> anterior deste documento foram substituídas pela abordagem escolhida.
 
 Ficheiros da resolução:
 
@@ -25,7 +32,7 @@ Ficheiros da resolução:
 5. [Herança (`Tubarao : public Peixe`)](#5-herança-tubarao--public-peixe)
 6. [Polimorfismo (`virtual`)](#6-polimorfismo-virtual)
 7. [Execução passo-a-passo do programa](#7-execução-passo-a-passo-do-programa)
-8. [O que ainda falta face ao enunciado e como completar](#8-o-que-ainda-falta-face-ao-enunciado-e-como-completar)
+8. [A saída do peixe e a remoção: a solução implementada](#8-a-saída-do-peixe-e-a-remoção-a-solução-implementada)
 9. [Resumo: porque é que esta é a forma correta](#9-resumo-porque-é-que-esta-é-a-forma-correta)
 
 ---
@@ -264,8 +271,11 @@ bidirecional, a solução da inclusão circular, a herança e os métodos virtua
 pequena variação no cenário: em vez de "peixe com mais de 50 g pede para sair", o
 professor simula **peixes que vão perdendo peso e avisam o aquário quando têm fome**. O
 mecanismo é **exatamente o mesmo** que o enunciado pede (peixe → aquário a pedir algo,
-aquário → peixe a dar comida). Na secção 8 mostro como completar para ficar igual ao
-enunciado, reaproveitando esse mecanismo.
+aquário → peixe a dar comida).
+
+Sobre essa base foi acrescentada a regra do enunciado: **depois de comer, se tiver mais
+de 50 g, o peixe pede ao aquário para sair**, e o aquário retira-o. Foi acrescentada
+também a pesquisa e a remoção por número de série. A secção 8 explica esta extensão.
 
 ---
 
@@ -279,8 +289,8 @@ procuram-se os "substantivos" que fazem coisas:
 
 | Classe | Porquê existe | Estado (dados) | Comportamento |
 |---|---|---|---|
-| `Peixe` | O enunciado fala de peixes, cada um com dados próprios e decisões próprias | `ID`, `ESPECIE`, `PESO`, `Ptr_Aquario`, `Ja_Avisei_Tenho_Fome` | `Run`, `Show`, `Alimentar`, `EstouComFome` |
-| `Aquario` | É um conceito diferente: um **contentor** que gere vários peixes | listas `LP`, `LP_Fome`, `LP_Assar` | `Add`, `Run`, `Alimentar`, `Remover`, `Pertence`, `Preciso_de_Comer` |
+| `Peixe` | O enunciado fala de peixes, cada um com dados próprios e decisões próprias | `ID`, `ESPECIE`, `PESO`, `COR`, `Ptr_Aquario`, `Ja_Avisei_Tenho_Fome`, `Ja_Avisei_Quero_Sair` | `Run`, `Show`, `Alimentar`, `EstouComFome`, `EstouGordo`, `GetID`, `GetPeso` |
+| `Aquario` | É um conceito diferente: um **contentor** que gere vários peixes | listas `LP`, `LP_Fome`, `LP_Assar` | `Add`, `Run`, `Alimentar`, `Preciso_de_Comer`, `QueroSair`, `RemoverParaAssar`, `RemoverID`, `Pertence` |
 | `Tubarao` | "Pode haver várias espécies de peixe e a decisão varia em função da espécie" → uma espécie com comportamento próprio é um **tipo especial de peixe** | o que herda de `Peixe` + `GRAU_PERIGO` | o que herda de `Peixe` (e pode redefinir métodos `virtual`) |
 | `Uteis` | Funções genéricas (aleatório, esperar) que não pertencem a nenhum conceito do problema | nenhum | métodos `static` |
 
@@ -306,7 +316,9 @@ código do aquário e vice-versa. Separar dá a cada classe **uma responsabilida
                      │ + Run()                              │
                      │ + Alimentar()                        │
                      │ + Preciso_de_Comer(Peixe*) : bool    │
-                     │ + Remover(int) : bool                │
+                     │ + QueroSair(Peixe*) : bool           │
+                     │ + RemoverParaAssar() : bool          │
+                     │ + RemoverID(int) : bool              │
                      │ + Pertence(int) : Peixe*             │
                      └──────────────────────────────────────┘
                         ◆ 1                          ▲
@@ -316,15 +328,19 @@ código do aquário e vice-versa. Separar dá a cada classe **uma responsabilida
                      ┌──────────────────────────────────────┐
                      │                Peixe                 │
                      │--------------------------------------│
-                     │ - ID, ESPECIE, PESO                  │
+                     │ - ID, ESPECIE, PESO, COR             │
                      │ - Ptr_Aquario : Aquario*             │
                      │ - Ja_Avisei_Tenho_Fome : bool        │
+                     │ - Ja_Avisei_Quero_Sair : bool        │
                      │ - EstouComFome()                     │
+                     │ # virtual EstouGordo() : bool        │
                      │--------------------------------------│
                      │ + Atribuir_Aquario(Aquario*)         │
                      │ + virtual Show()                     │
                      │ + virtual Run()                      │
                      │ + Alimentar(int)                     │
+                     │ + GetID() : int                      │
+                     │ + GetPeso() : int                    │
                      │ + virtual ~Peixe()                   │
                      └──────────────────────────────────────┘
                                        △
@@ -334,7 +350,11 @@ código do aquário e vice-versa. Separar dá a cada classe **uma responsabilida
                      │               Tubarao                │
                      │--------------------------------------│
                      │ - GRAU_PERIGO : int                  │
+                     │--------------------------------------│
+                     │ + virtual Show()   (redefinido)      │
                      └──────────────────────────────────────┘
+
+     Legenda: - private   # protected   + public
 
      Uteis: usada por Peixe e Aquario (dependência simples: "usa")
 ```
@@ -344,8 +364,10 @@ As três relações:
 1. **Aquario → Peixe: "tem" (composição/agregação, 1 para muitos).**
    O aquário guarda **muitos** peixes (`list<Peixe*> LP`). O enunciado diz: "quando um
    peixe é posto no aquário, este assume a sua posse e controlo total" — o aquário é o
-   **dono** dos peixes que tem. (Por isso, numa versão completa, quando o aquário é
-   destruído deve destruir os seus peixes — ver secção 8.)
+   **dono** dos peixes que tem. É por isso que é o aquário que faz `delete` quando um
+   peixe sai (`RemoverParaAssar`) ou é removido (`RemoverID`). Pela mesma razão, quando o
+   aquário é destruído devia destruir os peixes que ainda tem; isto ainda está por fazer
+   (secção 8.12).
 
 2. **Peixe → Aquario: "conhece" (associação, 0 ou 1).**
    O peixe guarda um `Aquario *Ptr_Aquario`, para saber **a quem pedir coisas**. Não é
@@ -382,9 +404,9 @@ As três relações:
 - `LP_Fome` — peixes que **pediram** comida. Repara: o aquário não vai "verificar quem tem
   fome" olhando para o peso dos peixes (isso seria violar o encapsulamento); são os
   **peixes que se inscrevem** nesta lista, chamando `Preciso_de_Comer(this)`.
-- `LP_Assar` — declarada mas ainda não usada. Pelo nome ("assar") e pelo enunciado, é
-  muito provavelmente para os peixes que **pedem para sair/ser removidos** — seguindo o
-  mesmo padrão da `LP_Fome`. Na secção 8 é usada exatamente para isso.
+- `LP_Assar` — peixes que **pediram para sair**. Segue o mesmo padrão da `LP_Fome`: o
+  peixe inscreve-se chamando `QueroSair(this)`, e o aquário trata os pedidos mais tarde,
+  em `RemoverParaAssar()`. Secção 8.
 
 ---
 
@@ -456,11 +478,15 @@ void Peixe::Alimentar(int cal)
 {
     PESO += cal;                    // decisão do peixe: converte comida em peso
     Ja_Avisei_Tenho_Fome = false;   // decisão do peixe: já não tem fome
+    if( EstouGordo() && !Ja_Avisei_Quero_Sair) // decisão do peixe: quer um "quintal" maior?
+    {
+        Ja_Avisei_Quero_Sair = Ptr_Aquario->QueroSair(this);
+    }
 }
 ```
 
-O aquário **não sabe** que o peixe tem um atributo `PESO` nem uma flag
-`Ja_Avisei_Tenho_Fome`. Nem precisa: `PESO` é `private`, e o aquário nem conseguiria
+O aquário **não sabe** que o peixe tem um atributo `PESO`, nem as flags
+`Ja_Avisei_Tenho_Fome` e `Ja_Avisei_Quero_Sair`, nem que o limite para sair são 50 g. Nem precisa: `PESO` é `private`, e o aquário nem conseguiria
 tocar-lhe — o compilador dava erro. O `private` é o "cadeado" que **obriga** o código a
 respeitar o encapsulamento.
 
@@ -487,9 +513,20 @@ bool Aquario::Preciso_de_Comer(Peixe *P)
 }
 ```
 
-É exatamente o que o enunciado diz para a remoção: "pede ao aquário para o tirar (**não se
-tira a ele próprio** – o peixe não faz ideia como é que o aquário guarda os peixes
-internamente)".
+A saída do aquário funciona da mesma forma. O enunciado diz: "pede ao aquário para o tirar
+(**não se tira a ele próprio** – o peixe não faz ideia como é que o aquário guarda os peixes
+internamente)". O peixe não faz `Ptr_Aquario->LP.remove(this)`. Pede:
+
+```cpp
+// no Peixe::Alimentar
+Ja_Avisei_Quero_Sair = Ptr_Aquario->QueroSair(this);   // "aquário, quero sair"
+
+bool Aquario::QueroSair(Peixe *P)
+{
+    LP_Assar.push_back(P);   // o aquário regista o pedido à sua maneira
+    return true;             // "pedido aceite"
+}
+```
 
 Cada lado manda **mensagens** ao outro; ninguém mexe nas "tripas" do outro:
 
@@ -498,9 +535,11 @@ Cada lado manda **mensagens** ao outro; ninguém mexe nas "tripas" do outro:
       │                                           │
       │ ── Alimentar(cal) ──────────────────────▶ │  (o peixe decide o que fazer
       │                                           │   com a comida)
+      │ ◀──────────────────────── QueroSair(this)─│  (se ficou com mais de 50 g)
+      │ ── return true ─────────────────────────▶ │
       │                                           │
-      │ ◀──────────────── Preciso_de_Comer(this)──│  (o aquário decide como
-      │ ── return true ─────────────────────────▶ │   regista o pedido)
+      │ ◀──────────────── Preciso_de_Comer(this)──│  (no Run, se tiver fome)
+      │ ── return true ─────────────────────────▶ │
 ```
 
 ### 3.4 Outros pormenores de bom encapsulamento na resolução
@@ -511,7 +550,11 @@ Cada lado manda **mensagens** ao outro; ninguém mexe nas "tripas" do outro:
 - **A flag `Ja_Avisei_Tenho_Fome`** é estado interno do peixe que evita que ele peça
   comida em todos os ciclos (e apareça repetido em `LP_Fome`). O aquário não sabe que ela
   existe. Se o peixe não tivesse esta flag, o problema "pedidos repetidos" teria de ser
-  resolvido pelo aquário, que ficaria a depender de um pormenor do peixe.
+  resolvido pelo aquário, que ficaria a depender de um pormenor do peixe. A flag
+  `Ja_Avisei_Quero_Sair` faz o mesmo para o pedido de saída (secção 8.6).
+- **`EstouGordo()` é `protected` e `virtual`.** O critério de saída é uma decisão interna
+  do peixe, por isso não é `public`. É `protected virtual` para que cada espécie derivada
+  possa ter o seu próprio critério (secção 6).
 - **`Atribuir_Aquario(Aquario *A)`** é o único "setter" do peixe, e existe por uma boa
   razão: o peixe não consegue descobrir sozinho em que aquário foi posto — é o aquário
   que lho diz, dentro do seu `Add`:
@@ -527,9 +570,15 @@ Cada lado manda **mensagens** ao outro; ninguém mexe nas "tripas" do outro:
   Assim o `main` só faz `AQ.Add(P)` e a ligação nos **dois sentidos** fica sempre
   consistente. Se o `main` tivesse de fazer `AQ.Add(P)` **e** `P->Atribuir_Aquario(&AQ)`,
   bastava alguém esquecer-se de um dos dois para o programa ficar incoerente.
-- **Não há `getPeso()`/`setPeso()` públicos.** Não são precisos. Getters e setters para
-  todos os atributos são quase o mesmo que pôr tudo `public` — a marioneta voltava pela
-  porta das traseiras.
+- **Getters só de leitura e só quando fazem falta.** Existem `GetID()` (o aquário precisa
+  do número de série para `Pertence` e `RemoverID`) e `GetPeso()` (o aquário mostra o peso
+  do peixe que sai). **Não há setters** como `SetPeso()`: com um setter, o aquário voltava
+  a poder decidir o peso do peixe, e a marioneta voltava pela porta das traseiras.
+
+  Mesmo um getter de leitura exige cuidado. Usar `GetPeso()` para **mostrar** o peso está
+  bem. Usá-lo para **decidir** pelo peixe, por exemplo
+  `if ((*it)->GetPeso() > 50) RemoverID(...)` no aquário, era voltar ao erro que o
+  enunciado descreve ("Estás com mais de 50 gramas? Então sai").
 
 ### 3.5 Boas práticas resumidas
 
@@ -537,9 +586,10 @@ Cada lado manda **mensagens** ao outro; ninguém mexe nas "tripas" do outro:
 2. Métodos públicos exprimem **ações/pedidos** ("alimenta-te"), não acesso a dados
    ("muda o teu peso").
 3. **Quem tem os dados é quem toma as decisões sobre eles** ("o peixe é que sabe").
-4. Métodos auxiliares internos ficam `private` (`EstouComFome`).
+4. Métodos auxiliares internos ficam `private` (`EstouComFome`) ou `protected`, se as
+   classes derivadas precisarem de os redefinir (`EstouGordo`).
 5. Só criar getters quando há uma necessidade real e, se possível, só de leitura (por ex.
-   o aquário precisa do número de série para `Pertence(id)` → um `GetID() const` faz
+   o aquário precisa do número de série para `Pertence(id)` → um `GetID()` faz
    sentido; um `SetID` não).
 6. Um objeto **pede** a outro em vez de lhe mexer nos dados.
 
@@ -551,7 +601,8 @@ Esta é a grande vantagem prática. Vamos imaginar mudanças que o professor (ou
 **Alteração A — "O metabolismo mudou: o peixe só aproveita 80 % da comida."**
 
 - Versão certa: muda-se **uma linha**, em `Peixe::Alimentar`:
-  `PESO += cal * 0.8;`. O `Aquario` não é tocado.
+  `PESO += cal * 0.8;`. O `Aquario` não é tocado. A regra de saída também continua
+  certa, porque `EstouGordo()` é chamado depois, já com o peso novo.
 - Versão marioneta: é preciso procurar **todos** os sítios onde alguém faz `PESO += ...`
   (o aquário, o `main`, outras classes...). Se faltar um, há um bug.
 
@@ -559,7 +610,7 @@ Esta é a grande vantagem prática. Vamos imaginar mudanças que o professor (ou
 o peixe-palhaço sai a partir de 30 g."** (isto é literalmente o que o enunciado sugere:
 "a decisão variava em função da espécie")
 
-- Versão certa: cada espécie redefine o seu critério (com herança + polimorfismo, secção 6).
+- Versão certa: cada espécie redefine `EstouGordo()` (herança + polimorfismo, secção 6).
   O código do aquário **continua igual**: só chama `(*it)->Alimentar(g)`. Pode até aparecer
   uma espécie nova daqui a um ano e o aquário não muda **uma linha**.
 - Versão marioneta: o aquário fica com um monstro de `if`s:
@@ -585,8 +636,8 @@ o peixe-palhaço sai a partir de 30 g."** (isto é literalmente o que o enunciad
 série, para procurar mais depressa."**
 
 - Versão certa: muda-se só `Aquario.h`/`Aquario.cpp`. O peixe nunca soube que era uma
-  `list` — ele só chama `Ptr_Aquario->Preciso_de_Comer(this)` (ou, na versão completa,
-  `Pedir_Para_Sair(this)`). **O enunciado diz exatamente isto**: "o peixe não faz ideia
+  `list`: só chama `Ptr_Aquario->Preciso_de_Comer(this)` e
+  `Ptr_Aquario->QueroSair(this)`. **O enunciado diz exatamente isto**: "o peixe não faz ideia
   como é que o aquário guarda os peixes internamente".
 - Versão em que o peixe "se tira a si próprio" (`Ptr_Aquario->LP.remove(this)`): o
   código do peixe partia, porque dependia de `LP` ser uma `list`.
@@ -854,8 +905,13 @@ Isto é encapsulamento a funcionar também entre mãe e filha: o `Tubarao` herda
 | `public` | ✔ | ✔ | ✔ |
 
 Boa prática: manter os **atributos `private`** e, se as filhas precisarem de ler algo,
-oferecer um método `protected` (por ex. `int GetPeso() const`), em vez de pôr o
-atributo `protected`. Assim continua a ser só o `Peixe` a decidir como o peso muda.
+oferecer um **método** de leitura em vez de pôr o atributo `protected`. Assim continua a
+ser só o `Peixe` a decidir como o peso muda. No projeto, esse método é `GetPeso()`. Está
+`public`, porque o aquário também o usa para mostrar o peso de quem sai; por isso as
+filhas também o podem usar.
+
+No projeto há um exemplo de membro `protected`: `virtual bool EstouGordo();`. O resto do
+mundo não o pode chamar, mas as classes derivadas podem redefini-lo (secção 6.5).
 
 ### 5.4 Construtores na herança: a lista de inicialização
 
@@ -979,39 +1035,59 @@ Como o aquário vai fazer `delete` de peixes que podem ser de qualquer espécie,
 destrutor da base tem de ser virtual**. Regra: *se uma classe tem algum método `virtual`,
 o destrutor também deve ser `virtual`.*
 
-### 6.5 O que já está preparado na resolução
+### 6.5 O polimorfismo no projeto
 
-`Peixe` declara `virtual void Show();` e `virtual void Run();`. O `Tubarao` ainda **não**
-os redefine (a resolução ficou na estrutura), por isso, neste momento, um tubarão usaria
-as versões de `Peixe`. Um exemplo de como o tubarão poderia redefinir `Run()`:
+`Peixe` tem três métodos `virtual` (além do destrutor):
+
+| Método | Onde é chamado | Redefinido no `Tubarao`? |
+|---|---|---|
+| `virtual void Show()` | `Peixe::Run()` | **Sim** |
+| `virtual void Run()` | `Aquario::Run()`, para cada peixe | Não (usa a versão de `Peixe`) |
+| `virtual bool EstouGordo()` (`protected`) | `Peixe::Alimentar()` | Não, mas está preparado para isso |
+
+**`Show()` já é redefinido pelo `Tubarao`:**
+
+```cpp
+void Tubarao::Show()
+{
+    cout << "Grau de perigo do Tubarao: " << GRAU_PERIGO;
+    Peixe::Show();                    // chama explicitamente a versão da classe base
+}
+```
+
+`Peixe::Show()` com o prefixo `Peixe::` chama **a versão da classe base**, e não a do
+próprio tubarão (que seria uma chamada recursiva infinita). O tubarão acrescenta a sua
+parte e reaproveita a do peixe. Há um pormenor de apresentação: falta um separador entre
+o número e o "Peixe:", por isso sai `Grau de perigo do Tubarao: 100Peixe: (...)`.
+
+`Show()` é chamado dentro de `Peixe::Run()`. Mesmo assim, para um tubarão é chamada a
+versão do tubarão: dentro de um método, `Show()` é na verdade `this->Show()`, e o `this`
+aponta para um `Tubarao`.
+
+**`EstouGordo()` é o ponto onde "a decisão varia em função da espécie".** O enunciado diz
+que a decisão de sair pode variar com a espécie. Como `EstouGordo()` é `virtual` e é
+chamado em `Peixe::Alimentar`, uma espécie só precisa de o redefinir:
 
 ```cpp
 // Tubarao.h
 class Tubarao : public Peixe
 {
     int GRAU_PERIGO;
-public:
-    ...
-    virtual void Run();
-    virtual void Show();
+    protected:
+        virtual bool EstouGordo();    // critério próprio do tubarão
+    public:
+        ...
 };
 
 // Tubarao.cpp
-void Tubarao::Run()
+bool Tubarao::EstouGordo()
 {
-    Peixe::Run();                     // reaproveita o comportamento normal de peixe...
-    if (Uteis::Aleatorio(1, 10) == 1)
-    {
-        cout << "O tubarao assusta toda a gente!" << endl;   // ...e acrescenta o seu
-        system("Tubarao.mp3 > null");  // os .mp3 da pasta parecem pensados para isto
-    }
-}
-void Tubarao::Show()
-{
-    cout << "[TUBARAO perigo=" << GRAU_PERIGO << "] ";
-    Peixe::Show();                    // chama explicitamente a versão da classe base
-}
+    return GetPeso() > 500;           // um tubarão só quer sair muito mais tarde
+}                                     // (ou "return false;": nunca sai)
 ```
+
+O tubarão não acede a `PESO` diretamente, porque é `private` em `Peixe` (secção 5.3). Usa
+`GetPeso()`.
 
 E no `main`:
 
@@ -1021,7 +1097,8 @@ AQ.Add(new Tubarao(99, "Branco", 300, 80));
 AQ.Run();      // o aquário chama (*it)->Run() sem saber quem é quem
 ```
 
-O `Aquario.cpp` **não muda uma linha** e passa a ter tubarões com comportamento próprio.
+O `Aquario.cpp` **não muda uma linha**. Ao ser alimentado, o tubarão usa o seu próprio
+critério de saída, e ao correr mostra-se à sua maneira.
 Isto é o que o enunciado pede quando diz "considere que pode haver várias espécies de peixe
 e de alguma forma a decisão variava em função da espécie" — a forma certa de "variar em
 função da espécie" é **herança + métodos virtuais**, não um `if (especie == ...)` no
@@ -1073,7 +1150,10 @@ while (true)
     cout << "Esfomeados: " << LP_Fome.size() << endl;
     cout << "------------------------------" << endl;
     if (LP_Fome.size() >= 2)              // 2. se pelo menos 2 pediram comida...
+    {
         Alimentar();                      //    ...alimenta toda a gente
+        RemoverParaAssar();               //    ...e trata dos pedidos de saída
+    }
     Uteis::wait_segundos(2);              // 3. espera 2 s e repete
 }
 ```
@@ -1094,6 +1174,9 @@ void Peixe::Run()
 ```
 
 ### 7.3 Output real (executei o programa) e o que cada linha significa
+
+**Versão original do professor**, antes de existir a saída do peixe (por isso ainda sem
+a cor):
 
 ```
 Aquario
@@ -1133,213 +1216,468 @@ O fluxo completo de uma "fome":
 Aqui veem-se os dois sentidos da ficha: **aquário → peixe** (`Alimentar`) e
 **peixe → aquário** (`Preciso_de_Comer`).
 
+### 7.4 Output real da versão atual, com peixes a sair
+
+Com 5 peixes. No último ciclo antes de comer, os peixes 13 e 11 tinham fome e os pesos
+eram 14: 23 g, 13: 17 g, 12: 32 g, 11: 19 g e 10: 29 g:
+
+```
+Esfomeados: 2                                   ← 13 e 11 pediram comida
+------------------------------
+Alimentacao a DEcorrer.....                     ← Aquario::Alimentar: cada peixe recebe 20..50 g
+                                                  14: 23+35=58 → EstouGordo() → QueroSair(this)
+                                                  12: 32+48=80 → QueroSair(this)
+                                                  10: 29+39=68 → QueroSair(this)
+                                                  13 e 11 ficam abaixo de 50 g → não pedem nada
+O peixe 14, com o peso 58(g), saiu do aquario!  ← Aquario::RemoverParaAssar, já fora do ciclo
+O peixe 12, com o peso 80(g), saiu do aquario!
+O peixe 10, com o peso 68(g), saiu do aquario!
+Peixe: (13,Sardinha,36,Cinzento)                ← ciclo seguinte: só restam 2 peixes
+Peixe: (11,Sardinha,43,Cinzento)
+Esfomeados: 0
+```
+
+O fluxo completo de uma "saída":
+
+```
+ Aquario::Alimentar ─(para cada peixe)─▶ Peixe::Alimentar(cal)
+                                            │ PESO += cal
+                                            │ se EstouGordo() e !Ja_Avisei_Quero_Sair:
+                                            │     Ptr_Aquario->QueroSair(this) ──▶ LP_Assar.push_back(P)
+                                            │     Ja_Avisei_Quero_Sair = true  ◀── return true
+ (o ciclo de Alimentar termina; a LP não foi tocada)
+
+ Aquario::Run ──▶ Aquario::RemoverParaAssar()
+                    para cada P em LP_Assar:  mostra ID e peso, LP.remove(P), delete P
+                    LP_Assar.clear()
+```
+
+**Um efeito na simulação.** O aquário só alimenta quando há **2 ou mais** peixes com fome.
+Numa das execuções saíram 3 de 4 peixes e ficou só um. Esse peixe pede comida, mas
+`LP_Fome.size()` nunca chega a 2, por isso nunca é alimentado. O peso vai descendo até
+valores sem sentido (vi `-2483627` ao fim de muitos ciclos). Não é um erro da saída: as
+regras da simulação do professor (alimentar com 20 a 50 g quando há 2 com fome) e a regra
+dos 50 g do enunciado não foram pensadas em conjunto. Pode ajustar-se, por exemplo
+alimentando quando `LP_Fome.size() >= 1` ou quando metade dos peixes tem fome.
+
 ---
 
-## 8. O que ainda falta face ao enunciado e como completar
+## 8. A saída do peixe e a remoção: a solução implementada
 
-A resolução da aula é uma **base** que monta a arquitetura (que era o objetivo da aula).
-Ficaram por fazer algumas coisas do enunciado, e há alguns pormenores a corrigir.
-Esta secção **não é** a resolução do professor — é uma sugestão de como completar
-**seguindo o mesmo desenho**.
+Esta secção explica **a extensão feita ao projeto do professor**: o peixe que passa dos
+50 g pede para sair e o aquário retira-o, e é possível remover um peixe pelo número de
+série. Todo o código mostrado é o código atual do projeto, com os nomes que lá estão.
 
-### 8.1 Diferenças / pontos em aberto
+### 8.1 O que foi acrescentado, ficheiro a ficheiro
 
-| Ponto | Situação na resolução | Enunciado |
+| Ficheiro | Acrescento | Para quê |
 |---|---|---|
-| Número de série | Passado à mão no construtor (`10+i`) | Automático, começa em 500, +1 por peixe (a cópia não incrementa) |
-| Cor | Não existe | Opcional, por omissão `"cinzento"` |
-| Peso inicial | Parâmetro (por omissão 10) | Sempre 10 g |
-| Sair do aquário | Não existe (há o mecanismo de "fome") | Se > 50 g e estiver num aquário, o peixe pede para sair |
-| `Pertence(id)` / `Remover(id)` | Vazios (`return NULL;` / `return true;`) | Têm de procurar pelo número de série |
-| Descrição textual | `Show()` escreve no ecrã | "Obter a descrição textual **em string**" |
-| `~Aquario()` | Vazio | O aquário tem "posse" → deve fazer `delete` dos seus peixes |
-| `Peixe()` | Declarado mas não implementado | Não deve existir (a espécie é obrigatória) |
-| `EstouComFome()` | Usa `Ptr_Aquario` sem verificar `NULL` | Um peixe fora de aquário rebentaria o programa se tivesse fome |
+| `Peixe.h` | `string COR;` + parâmetro `string _cor = "Cinzento"` no construtor | A cor do enunciado (opcional, "cinzento" por omissão) |
+| `Peixe.h` | `bool Ja_Avisei_Quero_Sair;` (`private`) | Lembrar se o peixe já pediu para sair, para não pedir duas vezes |
+| `Peixe.h` | `virtual bool EstouGordo();` (`protected`) | O **critério** de saída: decisão do peixe, que pode variar com a espécie |
+| `Peixe.h` | `int GetID()` (`public`) | O aquário precisa do número de série para procurar e para mostrar |
+| `Peixe.h` | `int GetPeso()` (`public`) | O aquário mostra o peso de quem sai; as espécies derivadas podem lê-lo |
+| `Peixe.cpp` | Em `Alimentar`: `if (EstouGordo() && !Ja_Avisei_Quero_Sair) ...QueroSair(this)` | O **momento** em que o peixe avalia se quer sair: logo depois de comer |
+| `Aquario.h/.cpp` | `bool QueroSair(Peixe *P)` | Receber o pedido do peixe e guardá-lo na `LP_Assar` |
+| `Aquario.h/.cpp` | `bool RemoverParaAssar()` | Tratar os pedidos guardados: tirar da `LP` e destruir |
+| `Aquario.h/.cpp` | `Peixe *Pertence(int id)` | Procurar um peixe pelo número de série |
+| `Aquario.h/.cpp` | `bool RemoverID(int id)` | Remover um peixe escolhido por número de série (pedido de fora) |
+| `Aquario.cpp` | Em `Run`: `RemoverParaAssar();` logo a seguir a `Alimentar();` | Momento em que os pedidos de saída são tratados |
+| `Tubarao.h/.cpp` | `virtual void Show();` redefinido | Exemplo de polimorfismo (secção 6.5) |
 
-### 8.2 Um cuidado importante: remover durante o percurso da lista
+### 8.2 Visão geral: os "atores" da remoção
 
-Se, dentro de `Aquario::Alimentar`, o peixe pedir para sair e o aquário o **remover logo
-da `LP`**, estamos a apagar um elemento da lista **enquanto o `for` a percorre** — o
-iterador `it` ficaria a apontar para um elemento que já não existe (*iterador
-invalidado*) → comportamento indefinido / crash.
+Antes do passo-a-passo, o papel de cada peça:
 
-A solução é o **mesmo padrão que o professor usou para a fome**: o pedido é **registado**
-numa lista à parte e **processado depois** do ciclo. É precisamente para isso que serve a
-`LP_Assar`.
-
-### 8.3 Sketch de como completar
-
-**Peixe.h**
-
-```cpp
-#ifndef PEIXE_H
-#define PEIXE_H
-
-#include <iostream>
-#include <string>
-#include <sstream>
-using namespace std;
-
-class Aquario;                       // declaração antecipada (continua a ser a solução)
-
-class Peixe
-{
-    static int PROXIMO_NUMERO;       // partilhado por TODOS os peixes (contador)
-    int NUMERO;                      // número de série deste peixe
-    string ESPECIE;
-    string COR;
-    int PESO;
-    Aquario *Ptr_Aquario;
-
-protected:
-    int GetPeso() const { return PESO; }       // as espécies derivadas podem LER o peso
-    virtual bool QueroSair() const;            // a regra que varia com a espécie
-
-public:
-    Peixe(string especie, string cor = "cinzento");   // espécie obrigatória, cor opcional
-    virtual ~Peixe();
-
-    void Atribuir_Aquario(Aquario *A) { Ptr_Aquario = A; }
-    int GetNumero() const { return NUMERO; }    // o aquário precisa para Pertence/Remover
-    void Alimentar(int gramas);
-    virtual string Descricao() const;
-};
-#endif
+```
+ PEIXE (decide)                                   AQUÁRIO (executa)
+ ───────────────────────────────                  ──────────────────────────────────────
+ PESO                 o estado que muda           LP        todos os peixes
+ EstouGordo()         "quero sair?"               LP_Fome   pedidos de comida
+ Ja_Avisei_Quero_Sair "já pedi?"                  LP_Assar  pedidos de saída (fila de espera)
+ Ptr_Aquario          "a quem peço"               QueroSair(P)        recebe o pedido
+ Alimentar(cal)       onde tudo começa            RemoverParaAssar()  trata os pedidos
+ GetID(), GetPeso()   leitura para o aquário      Pertence(id)        procura por número
+                                                  RemoverID(id)       remoção pedida de fora
 ```
 
-Nota sobre a cópia: o enunciado diz que "a construção por cópia não aumenta o número". O
-construtor de cópia que o C++ gera automaticamente copia `NUMERO` tal e qual e **não**
-passa pelo construtor acima, por isso já cumpre a regra sem escrever nada.
+A regra que organiza tudo: **o peixe decide, o aquário executa**. O peixe nunca se tira
+da lista sozinho, e o aquário nunca decide que um peixe "está gordo demais".
 
-**Peixe.cpp**
+### 8.3 Passo 1: o peixe come e avalia-se (`Peixe::Alimentar`)
 
-```cpp
-#include "Peixe.h"
-#include "Aquario.h"                  // aqui sim, a classe completa
-
-int Peixe::PROXIMO_NUMERO = 500;      // o primeiro peixe é o 500
-
-Peixe::Peixe(string especie, string cor)
-: ESPECIE(especie), COR(cor), PESO(10), Ptr_Aquario(NULL)
-{
-    NUMERO = PROXIMO_NUMERO++;        // usa o valor atual e incrementa para o próximo
-}
-
-Peixe::~Peixe() { }
-
-bool Peixe::QueroSair() const
-{
-    return PESO > 50;                 // regra "normal" de peixe
-}
-
-void Peixe::Alimentar(int gramas)
-{
-    PESO += gramas;                                   // o PEIXE decide o que faz à comida
-    if (Ptr_Aquario != NULL && QueroSair())           // o PEIXE decide se quer sair
-        Ptr_Aquario->Pedir_Para_Sair(this);           // e PEDE ao aquário (não se tira sozinho)
-}
-
-string Peixe::Descricao() const
-{
-    ostringstream os;                 // "escreve" para uma string em vez de para o ecrã
-    os << "Peixe " << NUMERO << ": " << ESPECIE << ", " << COR << ", " << PESO << " g";
-    return os.str();
-}
-```
-
-(Repara que `ostringstream` também é um `ostream` — a mesma ideia da `F1_Escrita`.)
-
-**Tubarao — a decisão varia com a espécie**
+Tudo começa quando o aquário alimenta os peixes:
 
 ```cpp
-class Tubarao : public Peixe
+void Aquario::Alimentar()
 {
-    int GRAU_PERIGO;
-protected:
-    virtual bool QueroSair() const { return false; }  // um tubarão nunca foge
-public:
-    Tubarao(int gp = 100) : Peixe("Tubarao", "azul"), GRAU_PERIGO(gp) { }
-    virtual string Descricao() const
+    cout << "Alimentacao a DEcorrer....." << endl;
+    for (list<Peixe *>::iterator it = LP.begin(); it != LP.end(); ++it)
     {
-        ostringstream os;
-        os << Peixe::Descricao() << " [perigo " << GRAU_PERIGO << "]";
-        return os.str();
+        (*it)->Alimentar(Uteis::Aleatorio(20, 50));   // "toma, come, faz o que entenderes"
     }
-};
+    LP_Fome.clear();
+    //RemoverParaAssar();
+}
 ```
 
-`Peixe::Alimentar` chama `QueroSair()`; como é `virtual`, se o objeto for um tubarão é
-chamada a versão do tubarão. Nem o `Peixe::Alimentar` nem o aquário precisam de saber que
-há tubarões.
-
-**Aquario.h / Aquario.cpp** (só o que muda)
+Para cada peixe, é chamado:
 
 ```cpp
-// Aquario.h
-public:
-    void Alimentar(int gramas);
-    void Pedir_Para_Sair(Peixe *P);
-    Peixe *Pertence(int numero);
-    bool Remover(int numero);
-    void Listar(ostream &os) const;
-
-// Aquario.cpp
-Aquario::~Aquario()
+void Peixe::Alimentar(int cal)
 {
-    for (list<Peixe *>::iterator it = LP.begin(); it != LP.end(); ++it)
-        delete *it;                    // o aquário é dono → destrói os seus peixes
-}
-
-void Aquario::Pedir_Para_Sair(Peixe *P)
-{
-    LP_Assar.push_back(P);             // regista o pedido; não mexe na LP agora
-}
-
-void Aquario::Alimentar(int gramas)
-{
-    for (list<Peixe *>::iterator it = LP.begin(); it != LP.end(); ++it)
-        (*it)->Alimentar(gramas);      // "toma, come, faz o que entenderes"
-
-    // só agora, fora do ciclo, trata dos pedidos de saída
-    for (list<Peixe *>::iterator it = LP_Assar.begin(); it != LP_Assar.end(); ++it)
+    PESO += cal;                                  // (a) a comida vira peso
+    Ja_Avisei_Tenho_Fome = false;                 // (b) já não tem fome
+    if( EstouGordo() && !Ja_Avisei_Quero_Sair)    // (c) quero sair? e ainda não pedi?
     {
+        Ja_Avisei_Quero_Sair = Ptr_Aquario->QueroSair(this);   // (d) peço ao aquário
+    }
+}
+
+bool Peixe::EstouGordo()
+{
+    return PESO > 50 ;
+}
+```
+
+Linha a linha:
+
+- **(a)** O peixe soma a comida ao seu peso. É ele que decide o que a comida lhe faz
+  (secção 3).
+- **(b)** Acabou de comer, por isso deixa de estar "à espera de comida". Se voltar a ter
+  fome mais tarde, poderá pedir outra vez.
+- **(c)** Duas condições, e as duas têm de ser verdadeiras:
+  - `EstouGordo()`: **o critério**. Neste momento é "mais de 50 g". Como é `virtual`,
+    se o peixe for de uma espécie que redefine `EstouGordo()` (por exemplo um
+    `Tubarao`), é chamada a versão dessa espécie (secção 6.5). O aquário nunca vê este
+    critério.
+  - `!Ja_Avisei_Quero_Sair`: **ainda não pedi**. Evita pedidos repetidos (passo 8.6).
+- **(d)** O peixe **pede** ao aquário, enviando o seu próprio endereço (`this`, secção
+  0.6). O que o aquário devolve (`true` = "pedido aceite") fica guardado na flag. A partir
+  daqui `Ja_Avisei_Quero_Sair` é `true` e o peixe não volta a pedir.
+
+**Porque é que a avaliação está em `Alimentar` e não em `Run`?** A fome é verificada em
+`Peixe::Run()` porque é aí que o peso **desce**. O excesso de peso só pode acontecer onde o
+peso **sobe**, e isso só acontece em `Alimentar`. Cada regra é verificada **onde muda o
+estado que a provoca**. É também o momento que o enunciado descreve: "Ser alimentado com
+(...) alimento que é somada ao seu peso. Se exceder 50g e estiver num aquário, (...) foge".
+O exemplo errado do enunciado, "toma isto, come. Estás com mais de 50 gramas? Então sai",
+também coloca a verificação logo a seguir a comer. O erro que aponta é **quem** verifica,
+não **quando**.
+
+As duas regras ("comida soma ao peso" e "acima de 50 g quer sair") continuam separadas:
+a primeira está na linha `PESO += cal`, a segunda em `EstouGordo()`. O `Alimentar` só
+liga uma à outra pela ordem certa.
+
+### 8.4 Passo 2: o aquário regista o pedido (`Aquario::QueroSair`)
+
+```cpp
+bool Aquario:: QueroSair ( Peixe * P)
+{
+    LP_Assar.push_back(P);
+    return true;
+}
+```
+
+O aquário **não remove o peixe aqui**. Só o põe numa fila de espera, a `LP_Assar`, e
+responde `true`. É o mesmo padrão do professor para a fome (`Preciso_de_Comer` guarda em
+`LP_Fome`).
+
+**Porque é que não pode remover logo?** Repara de onde vem esta chamada:
+
+```
+Aquario::Alimentar            ← está a meio do for, com o iterador "it" a apontar para este peixe
+  └─ Peixe::Alimentar         ← está a meio da sua execução, dentro do objeto peixe
+       └─ Aquario::QueroSair  ← estamos aqui
+```
+
+Se `QueroSair` fizesse `LP.remove(P); delete P;`, aconteciam dois problemas graves:
+
+1. **Iterador inválido.** O `for` de `Aquario::Alimentar` tem um iterador `it` a apontar
+   para o elemento da lista que acabou de ser apagado. Quando o ciclo fizer `++it`, está a
+   avançar a partir de um elemento que já não existe: comportamento indefinido (pode
+   saltar peixes, repetir peixes ou rebentar).
+2. **Objeto destruído a meio de um método seu.** Quando `QueroSair` terminasse, a execução
+   voltava para dentro de `Peixe::Alimentar`, que tenta escrever
+   `Ja_Avisei_Quero_Sair = ...` num peixe que já foi apagado com `delete`. Também é
+   comportamento indefinido.
+
+Guardar o pedido e tratá-lo **depois** de o ciclo terminar resolve os dois problemas: no
+momento em que se remove, já ninguém está a percorrer a `LP` nem a executar um método
+desse peixe.
+
+Há também uma razão de encapsulamento: o peixe não sabe **como** nem **quando** o aquário
+o vai tirar. Pode ser já, daqui a pouco, ou o aquário pode até recusar (devolvendo
+`false`). Essa decisão é do aquário.
+
+### 8.5 Passo 3: o aquário trata os pedidos (`Aquario::RemoverParaAssar`)
+
+Depois de `Alimentar` terminar, `Aquario::Run` chama:
+
+```cpp
+if (LP_Fome.size() >= 2)
+{
+    Alimentar();
+    RemoverParaAssar();
+}
+```
+
+```cpp
+bool Aquario::RemoverParaAssar() //precorrer lista de Peixes
+{
+    for(list<Peixe*>::iterator it = LP_Assar.begin(); it != LP_Assar.end(); ++it )
+    {
+        cout << "O peixe "<< (*it)->GetID() << ", com o peso " << (*it)->GetPeso() <<  "(g), saiu do aquario!" << endl;
         LP.remove(*it);
-        delete *it;                    // "poder de vida e morte": o aquário decide o destino
+        delete *it;
     }
-    LP_Assar.clear();
-}
+    LP_Assar.clear(); // no fim de remover da lista dos Peixes, limpar lista LP_ASSAR
 
-Peixe *Aquario::Pertence(int numero)
+    return true;
+}
+```
+
+Para cada peixe que pediu para sair:
+
+1. **Mostra o ID e o peso** com `GetID()` e `GetPeso()`. Tem de ser **antes** do `delete`:
+   depois dele o peixe já não existe.
+2. **`LP.remove(*it)`** tira o ponteiro da lista principal. A partir daqui o peixe deixa
+   de ser alimentado, deixa de correr e o `Pertence` deixa de o encontrar.
+   - Aqui não há problema de iterador: o ciclo percorre a `LP_Assar` e remove da `LP`,
+     que são listas diferentes.
+3. **`delete *it`** destrói o peixe. É o aquário que o faz porque é o **dono** ("poder de
+   vida e morte", secção 2.2). Como `~Peixe()` é `virtual`, se for um `Tubarao` corre
+   também `~Tubarao()` (secção 6.4).
+
+No fim, **`LP_Assar.clear()`** esvazia a fila. Os ponteiros que lá estavam apontam para
+peixes destruídos e não podem ficar lá.
+
+Não é preciso limpar a `LP_Fome` aqui. `Alimentar` já fez `LP_Fome.clear()` antes de
+`RemoverParaAssar` correr, por isso nenhum peixe destruído fica nessa lista.
+
+### 8.6 O papel da flag `Ja_Avisei_Quero_Sair`
+
+Na abordagem escolhida, `RemoverParaAssar` corre logo a seguir a `Alimentar`. Por isso,
+no funcionamento normal, um peixe que pediu para sair é destruído antes de poder pedir
+outra vez. A flag parece desnecessária, mas protege contra um erro grave:
+
+> Se `Alimentar()` fosse chamado duas vezes seguidas **sem** `RemoverParaAssar()` pelo
+> meio (por exemplo num menu do `main`), um peixe com mais de 50 g pediria nas duas
+> vezes. O mesmo ponteiro ficaria **duas vezes** na `LP_Assar`, e `RemoverParaAssar`
+> faria `delete` **duas vezes** ao mesmo peixe: o programa rebenta (*double free*).
+
+Com a flag, o peixe pede **uma única vez**, por muitas vezes que seja alimentado.
+
+É o mesmo papel da `Ja_Avisei_Tenho_Fome` do professor, e pela mesma razão de
+encapsulamento: é o **peixe** que evita pedidos repetidos. O aquário não tem de verificar
+se o peixe já está na `LP_Assar`.
+
+A flag nunca volta a `false`. Não é preciso: um peixe que pediu para sair vai ser
+destruído.
+
+### 8.7 Onde se chama `RemoverParaAssar`: a abordagem escolhida
+
+A chamada está em `Aquario::Run`, logo a seguir a `Alimentar()`. Dentro de
+`Alimentar`, a linha `//RemoverParaAssar();` ficou comentada. As duas opções são
+corretas, porque ambas tratam os pedidos **depois** do ciclo de alimentação:
+
+| | Em `Run`, a seguir a `Alimentar()` (escolhida) | No fim de `Alimentar()` |
+|---|---|---|
+| Os pedidos são tratados depois do ciclo? | Sim | Sim |
+| `Alimentar` faz uma só coisa? | Sim: só alimenta | Alimenta e trata as saídas |
+| Quem chama `Alimentar` tem de se lembrar de `RemoverParaAssar`? | **Sim** | Não |
+| Entre `Alimentar` e `RemoverParaAssar`, `Pertence(id)` encontra um peixe que já pediu para sair? | Sim, se alguém chamar entretanto | Nunca |
+
+Na simulação atual, só `Run` chama `Alimentar`, por isso a abordagem escolhida funciona
+sem problemas. Há uma consequência a ter em conta se mais tarde existir um menu no `main`
+com a opção "alimentar": o menu terá de chamar `AQ.Alimentar();` **e**
+`AQ.RemoverParaAssar();`. Se se esquecer da segunda, os peixes ficam "à espera de sair"
+indefinidamente (a flag impede que isso cause *double free*, mas eles continuam no
+aquário). Nessa altura, ou se descomenta a linha em `Alimentar`, ou se garante que todos
+os sítios que alimentam também tratam os pedidos.
+
+### 8.8 A outra forma de remover: `Pertence` + `RemoverID`
+
+O enunciado pede no `main`: "Verificar se um determinado peixe se encontra no aquário dado
+o seu número de série" e "Remover um peixe dado o seu número de série".
+
+```cpp
+Peixe *Aquario::Pertence(int id) //pesquisa por ID
 {
     for (list<Peixe *>::iterator it = LP.begin(); it != LP.end(); ++it)
-        if ((*it)->GetNumero() == numero)
+        if ((*it)->GetID() == id) //chama metodo GetID no Peixe para o qual aponta it
             return *it;
     return NULL;
 }
+```
 
-bool Aquario::Remover(int numero)
+`Pertence` percorre a `LP` e compara o número de série de cada peixe com o pedido. Se
+encontra, devolve **o ponteiro** para esse peixe (quem chamou pode usá-lo, por exemplo
+para o mostrar). Se chega ao fim sem encontrar, devolve `NULL`, que quer dizer "não está
+aqui". Usa `GetID()` porque `ID` é `private` no `Peixe`.
+
+```cpp
+bool Aquario::RemoverID(int id)
 {
-    Peixe *P = Pertence(numero);       // reaproveita a pesquisa
+    Peixe *P = Pertence(id); //Pesquisa porID, e verifica se existe e tenta eliminar de todas as listas
     if (P == NULL)
-        return false;
+        return false;            // não existe nenhum peixe com esse número
     LP.remove(P);
+    LP_Fome.remove(P);           // não deixar ponteiros para um peixe apagado
+    LP_Assar.remove(P);
     delete P;
     return true;
 }
-
-void Aquario::Listar(ostream &os) const   // serve para cout e para ficheiros!
-{
-    for (list<Peixe *>::const_iterator it = LP.begin(); it != LP.end(); ++it)
-        os << (*it)->Descricao() << endl;
-}
 ```
 
-(Quanto ao destino de um peixe que sai — destruí-lo, devolvê-lo a quem o pediu, ou
-mudá-lo para outro aquário — é uma decisão de desenho; o importante é que é **o aquário**
-que a executa, a pedido do **peixe**.)
+1. **Reaproveita `Pertence`** em vez de repetir a pesquisa.
+2. **Se não existe, devolve `false`** e não faz mais nada. Quem chamou (o menu) pode
+   avisar "não existe nenhum peixe com esse número".
+3. **Tira o peixe das três listas.** Isto é essencial: o peixe pode estar na `LP_Fome`
+   (pediu comida e ainda não foi alimentado) ou na `LP_Assar` (pediu para sair e o pedido
+   ainda não foi tratado). Se ficasse numa delas:
+   - na `LP_Fome`, ficava lá um ponteiro para um peixe destruído;
+   - na `LP_Assar`, o próximo `RemoverParaAssar` faria `GetID()` e `delete` a um peixe
+     já destruído, o que rebenta o programa.
+4. **`delete P`** destrói o peixe e **devolve `true`**.
 
-O `main` passaria a ter um menu com as opções do enunciado (adicionar, listar com
-`AQ.Listar(cout)`, alimentar, `Pertence`, `Remover`).
+`RemoverID` pode remover logo, porque é chamado **de fora** (do `main`): nesse momento
+ninguém está a percorrer a `LP` nem a executar um método do peixe.
+
+### 8.9 A diferença entre `RemoverParaAssar` e `RemoverID`
+
+Os dois acabam a fazer o mesmo (tirar o peixe da `LP` e fazer `delete`), mas respondem a
+situações diferentes:
+
+| | `RemoverParaAssar()` | `RemoverID(int id)` |
+|---|---|---|
+| **Quem toma a iniciativa** | O **peixe**: decidiu sair e pediu com `QueroSair(this)` | **Alguém de fora**: o utilizador, através do `main` |
+| **Como se sabe qual é o peixe** | O peixe identificou-se ao enviar o seu endereço (`this`), que ficou guardado na `LP_Assar` | Quem está fora não tem o ponteiro, só o **número de série**. É preciso procurar com `Pertence(id)` |
+| **Quantos peixes** | Todos os que pediram (um lote, pode ser 0, 1 ou vários) | Um, o do `id` |
+| **Parâmetros** | Nenhum: a informação já está na `LP_Assar` | O `id` a procurar |
+| **Quando corre** | Num momento escolhido pelo aquário: depois de `Alimentar`, em `Run` | Quando o utilizador pede |
+| **Pode falhar?** | Não: os peixes da `LP_Assar` existem de certeza | Sim: o `id` pode não existir, por isso devolve `false` |
+| **Que listas limpa** | `LP` e `LP_Assar` (a `LP_Fome` já foi limpa por `Alimentar`) | As três: `LP`, `LP_Fome` e `LP_Assar` |
+| **Porque não remove de imediato no pedido** | O pedido chega a meio do ciclo de `Alimentar` (secção 8.4) | Não há esse problema: é chamado de fora de qualquer ciclo |
+
+**Porque é que não chega ter só um?**
+
+- **Só `RemoverParaAssar`:** o utilizador não conseguiria remover um peixe à sua escolha,
+  que é uma funcionalidade pedida no enunciado.
+- **Só `RemoverID`, chamado pelo próprio peixe** (`Ptr_Aquario->RemoverID(ID)` dentro de
+  `Peixe::Alimentar`): o peixe era destruído a meio do ciclo de `Alimentar` e a meio do
+  seu próprio método. São os dois problemas da secção 8.4. E não se poderia mudar
+  `RemoverID` para "guardar e tratar depois", porque o utilizador espera que, ao remover,
+  o peixe desapareça logo.
+
+**Código repetido.** As linhas `LP.remove(...)` + `delete ...` aparecem nos dois
+métodos. Se um dia a remoção tiver de fazer mais alguma coisa (por exemplo, escrever num
+ficheiro de registo), é preciso lembrar-se de alterar os dois. Uma melhoria opcional é pôr
+esse trabalho comum num método `private` que ambos chamam.
+
+### 8.10 Tudo junto: o percurso completo de um peixe que sai
+
+```
+Aquario::Run
+ │
+ ├─ for cada peixe: Peixe::Run()  (peso desce; com fome → Preciso_de_Comer(this) → LP_Fome)
+ │
+ ├─ LP_Fome.size() >= 2 ?
+ │    │
+ │    ├─ Aquario::Alimentar()
+ │    │    for cada peixe em LP:
+ │    │      Peixe::Alimentar(cal)
+ │    │        PESO += cal
+ │    │        Ja_Avisei_Tenho_Fome = false
+ │    │        EstouGordo()? (virtual: critério da espécie)  e  !Ja_Avisei_Quero_Sair ?
+ │    │          └─ sim → Ptr_Aquario->QueroSair(this)
+ │    │                     └─ LP_Assar.push_back(P); return true
+ │    │                   Ja_Avisei_Quero_Sair = true
+ │    │    LP_Fome.clear()
+ │    │    (fim do ciclo: a LP não foi alterada durante o percurso)
+ │    │
+ │    └─ Aquario::RemoverParaAssar()
+ │         for cada P em LP_Assar:
+ │           mostra P->GetID(), P->GetPeso()
+ │           LP.remove(P)
+ │           delete P           (virtual ~Peixe → também ~Tubarao, se for tubarão)
+ │         LP_Assar.clear()
+ │
+ └─ espera 2 s e repete
+
+main (quando houver menu):
+   AQ.Pertence(id)  → ponteiro ou NULL
+   AQ.RemoverID(id) → Pertence; tira de LP, LP_Fome, LP_Assar; delete; true/false
+```
+
+### 8.11 Teste
+
+Testei os métodos numa cópia do projeto com um `main` de teste. Criei 4 peixes, 500 a 503,
+com 10, 20, 30 e 40 g:
+
+```
+Alimentacao a DEcorrer.....
+-- Alimentar feito, pedidos ainda pendentes; Pertence(503)? 1      ← ainda está na LP
+O peixe 503, com o peso 70(g), saiu do aquario!                     ← RemoverParaAssar
+O peixe 502, com o peso 55(g), saiu do aquario!
+-- depois de RemoverParaAssar; Pertence(503)? 0                     ← já não está
+RemoverID(500): 1                                                   ← existia, removido
+RemoverID(999): 0                                                   ← não existe
+```
+
+A primeira linha de teste confirma o que a secção 8.7 descreve. Entre `Alimentar` e
+`RemoverParaAssar`, o peixe 503 já pediu para sair mas ainda está no aquário. Também se
+vê o resultado do que cada peixe comeu (+20..50 g aleatórios): só os que passaram dos 50 g
+pediram para sair.
+
+### 8.12 O que ainda falta ou pode ser melhorado
+
+O projeto compila sem erros nem avisos e a remoção funciona. Ficam estes pontos:
+
+**Importantes**
+
+- **Falta verificar `Ptr_Aquario != NULL`** em `Peixe::Alimentar` e em
+  `Peixe::EstouComFome`. O enunciado diz que o peixe foge "se exceder 50g **e estiver num
+  aquário**", e permite que um peixe seja criado fora de qualquer aquário. Se um desses
+  peixes for alimentado acima de 50 g (ou ficar com fome), faz `NULL->QueroSair(this)` e
+  o programa rebenta:
+
+  ```cpp
+  if (Ptr_Aquario != NULL && EstouGordo() && !Ja_Avisei_Quero_Sair)
+  ```
+
+- **`~Aquario()` está vazio.** O aquário é dono dos peixes, por isso, ao ser destruído,
+  devia fazer `delete` dos que ainda estão na `LP`. Hoje isso não se nota porque o `Run`
+  nunca termina, mas é uma fuga de memória.
+
+**Menores**
+
+- **`RemoverParaAssar` devolve sempre `true`.** Funciona, mas o valor não dá informação.
+  Podia ser `void`, ou devolver o número de peixes que saíram.
+- **`RemoverParaAssar` e `QueroSair` são `public`.** O `main` pode chamá-los por engano.
+  `RemoverParaAssar` tem de ser público enquanto um futuro menu precisar de o chamar
+  (secção 8.7); se passar a ser chamado dentro de `Alimentar`, pode ser `private`.
+  `QueroSair` tem de ser público para o `Peixe` o poder chamar.
+- **`Peixe();`** está declarado em `Peixe.h` e não está implementado. Se alguém o usar, dá
+  erro de *linker*. Pode ser apagado (o enunciado exige sempre a espécie).
+- **`GetID()`, `GetPeso()` e `EstouGordo()` não alteram o peixe.** Podiam ser `const`
+  (`int GetID() const`), o que documenta e garante isso. Se `EstouGordo` passar a `const`,
+  as versões das classes derivadas também o têm de ser.
+- **`Tubarao::Show()`** escreve `Grau de perigo do Tubarao: 100Peixe: (...)`, sem
+  separador.
+- Em `Peixe.h` ficou o comentário `// filhos de Peixe podem LER o peso` sozinho na zona
+  `protected`, mas `GetPeso()` passou para `public`.
+- **Os ficheiros estão gravados em Latin-1** (os acentos dos comentários). Compila, mas
+  noutros editores aparecem caracteres estranhos. Convém gravar em UTF-8.
+
+**Do enunciado, ainda por fazer** (não tem a ver com a remoção)
+
+- Número de série automático, a começar em 500 (hoje é passado no construtor: `10+i`).
+  Faz-se com um atributo `static int` no `Peixe`, que conta os peixes criados.
+- Peso inicial sempre 10 g (hoje é um parâmetro).
+- "Obter a descrição textual em string" (hoje `Show()` escreve diretamente no ecrã).
+- O `main` com menu: adicionar, listar, alimentar, verificar (`Pertence`) e remover
+  (`RemoverID`).
 
 ---
 
@@ -1347,11 +1685,12 @@ O `main` passaria a ter um menu com as opções do enunciado (adicionar, listar 
 
 1. **Uma classe por conceito** (`Peixe`, `Aquario`, `Tubarao`), cada uma com uma
    responsabilidade só. O código de cada conceito está num único sítio.
-2. **Encapsulamento**: atributos `private`; o aquário **diz** ao peixe "come" e o peixe
-   **decide**; o peixe **pede** ao aquário "preciso de comer / quero sair" e o aquário
-   **decide** como gere as suas listas. Ninguém é marioneta de ninguém. Resultado: cada
-   alteração futura (metabolismo, unidades, nova espécie, nova estrutura de dados) fica
-   **contida numa classe**.
+2. **Encapsulamento**: atributos `private`. O aquário **diz** ao peixe "come", e o peixe
+   **decide** o que isso lhe faz, incluindo se quer sair (`EstouGordo`). O peixe **pede**
+   ao aquário "preciso de comer" (`Preciso_de_Comer`) ou "quero sair" (`QueroSair`), e o
+   aquário **decide** como gere as suas listas. Ninguém é marioneta de ninguém. Resultado:
+   cada alteração futura (metabolismo, unidades, nova espécie, nova estrutura de dados)
+   fica **contida numa classe**.
 3. **Relação bidirecional** feita com ponteiros: o aquário guarda `Peixe*` e o peixe
    guarda `Aquario*`. O `Add` estabelece as duas ligações de uma vez (`this`), para nunca
    ficarem incoerentes.
@@ -1361,7 +1700,11 @@ O `main` passaria a ter um menu com as opções do enunciado (adicionar, listar 
    métodos). A cadeia de includes fica linear.
 5. **Herança** (`Tubarao : public Peixe`) para reaproveitar tudo o que é comum aos peixes,
    com o construtor da base chamado na lista de inicialização.
-6. **Polimorfismo** (`virtual Run`, `virtual Show`, `virtual ~Peixe`) + lista de
-   **ponteiros**: o aquário trata todos os peixes por igual e cada espécie responde à sua
-   maneira. Espécies novas não obrigam a mexer no aquário — que é exatamente o que o
-   enunciado sugere quando diz que "a decisão varia em função da espécie".
+6. **Polimorfismo** (`virtual Run`, `virtual Show`, `virtual EstouGordo`,
+   `virtual ~Peixe`) + lista de **ponteiros**: o aquário trata todos os peixes por igual e
+   cada espécie responde à sua maneira, incluindo o critério de saída. Espécies novas não
+   obrigam a mexer no aquário.
+7. **Remoção segura**: os pedidos vindos do peixe ficam numa fila (`LP_Assar`) e só são
+   tratados **depois** do ciclo que os gerou (`RemoverParaAssar`). A flag
+   `Ja_Avisei_Quero_Sair` impede pedidos repetidos. A remoção pedida de fora
+   (`RemoverID`) procura pelo número de série e limpa o peixe de todas as listas.

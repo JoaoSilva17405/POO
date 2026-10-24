@@ -36,3 +36,41 @@
 1792687588 c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\include\tubarao.h
 	"Peixe.h"
 
+1792864846 source:f:\poo\teorica 5.2\main.cpp
+	<iostream>
+	<fstream>
+	"Uteis.h"
+	"Aquario.h"
+
+1792853356 f:\poo\teorica 5.2\uteis.h
+	<iostream>
+	<time.h>
+
+1792868035 f:\poo\teorica 5.2\include\aquario.h
+	<iostream>
+	<string>
+	<list>
+	"Peixe.h"
+
+1792868347 f:\poo\teorica 5.2\include\peixe.h
+	<iostream>
+	<string>
+	"..//Uteis.h"
+
+1792853356 f:\poo\teorica 5.2\\uteis.h
+	<iostream>
+	<time.h>
+
+1792864846 source:f:\poo\teorica 5.2\src\tubarao.cpp
+	"Tubarao.h"
+
+1792864897 f:\poo\teorica 5.2\include\tubarao.h
+	"Peixe.h"
+
+1792866187 source:f:\poo\teorica 5.2\src\peixe.cpp
+	"Peixe.h"
+	"Aquario.h"
+
+1792868018 source:f:\poo\teorica 5.2\src\aquario.cpp
+	"Aquario.h"
+

@@ -10,6 +10,7 @@ class Tubarao : public Peixe
     public:
         Tubarao();
         Tubarao(int _id, string _especie, int PESO, int gp = 100);
+        virtual void Show();
         virtual ~Tubarao();
 
 };

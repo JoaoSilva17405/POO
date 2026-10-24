@@ -15,3 +15,9 @@ Tubarao::~Tubarao()
 {
     //dtor
 }
+
+void Tubarao::Show()
+{
+    cout << "Grau de perigo do Tubarao: " << GRAU_PERIGO;
+    Peixe::Show();
+}

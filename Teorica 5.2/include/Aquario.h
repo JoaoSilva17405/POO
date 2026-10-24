@@ -21,10 +21,12 @@ class Aquario
         void Add(Peixe *P);
         void Run();
         void Alimentar();
-        bool Remover(int id);
+        bool RemoverParaAssar();
+        bool RemoverID(int id);
         Peixe *Pertence(int id);
 
         bool Preciso_de_Comer(Peixe *P);
+        bool QueroSair(Peixe *P);
 };
 
 #endif // AQUARIO_H

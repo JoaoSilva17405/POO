@@ -21,8 +21,11 @@ void F1_ficheiro()
     F.close();
 }
 
-void F1_Escrita(ostream &fsaida)
-{
+void F1_Escrita(ostream &fsaida)  //passamos no parametro da função o tipo de output
+{                                  // no main :
+                                   // -F1_Escrita(cout);       ->para ecra
+                                   // -ofstream F("dados.txt");->não esquecer abrir ficheiro
+                                   // -F1_Escrita(F);          ->para ficheiro
     for (int i = 0; i < 10; i++)
         fsaida << "Ola pessoal" <<endl;
 
