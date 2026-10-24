@@ -6,8 +6,16 @@ Aquario::Aquario()
 }
 
 Aquario::~Aquario()
+
+//Quando um objeto Aquario é destruído, as listas LP, LP_Fome e LP_Assar
+//são destruídas automaticamente. Mas essas listas guardam só ponteiros.
+//Destruir a lista apaga as "moradas", não os peixes.
+//Os peixes ficam na memória sem ninguém que aponte para eles.(fuga de memoria)
+//E se um peixe tiver um destrutor com trabalho a fazer (como o ~Tubarao), esse código nunca correria.
 {
     //dtor
+    for (list<Peixe *>::iterator it = LP.begin(); it != LP.end(); ++it)
+        delete *it;
 }
 
 void Aquario::Add(Peixe *P)
