@@ -1,0 +1,25 @@
+ Volume in drive C is Windows
+ Volume Serial Number is D68B-332D
+
+ Directory of C:\Users\FMorgado\OneDrive\Ambiente de Trabalho\Projecto_Aquario
+
+22/10/2026  17:54    <DIR>          .
+22/10/2026  17:54    <DIR>          ..
+22/10/2026  17:30    <DIR>          bin
+22/10/2026  17:53               144 dados.txt
+15/10/2026  15:21           315ÿ184 Ficha_5_POO.pdf
+22/10/2026  17:46    <DIR>          include
+22/10/2026  17:53             1ÿ072 main.cpp
+15/10/2026  14:45        10ÿ903ÿ200 Motoserra_1.mp3
+15/10/2026  14:49           764ÿ160 Motoserra_2.mp3
+22/10/2026  17:30    <DIR>          obj
+22/10/2026  17:46             1ÿ405 Projecto_Aquario.cbp
+22/10/2026  17:53             1ÿ133 Projecto_Aquario.depend
+22/10/2026  16:47             1ÿ303 Projecto_Aquario.layout
+16/10/2026  10:53        11ÿ163ÿ578 Projecto_Aquario_V0.zip
+22/10/2026  17:46    <DIR>          src
+15/10/2026  14:40           129ÿ567 Tubarao.mp3
+08/10/2026  15:57               546 Uteis.h
+22/10/2026  17:54                 0 ze.txt
+              12 File(s)     23ÿ281ÿ292 bytes
+               6 Dir(s)  18ÿ220ÿ171ÿ264 bytes free

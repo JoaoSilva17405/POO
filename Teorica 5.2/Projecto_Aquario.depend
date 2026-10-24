@@ -1,0 +1,38 @@
+# depslib dependency file v1.0
+1792082711 source:c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\main.cpp
+	<iostream>
+	"Uteis.h"
+	"Aquario.h"
+
+1791471458 c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\uteis.h
+	<iostream>
+	<time.h>
+
+1792686615 source:c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\src\peixe.cpp
+	"Peixe.h"
+	"Aquario.h"
+
+1792687588 c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\include\peixe.h
+	<iostream>
+	<string>
+	"..//Uteis.h"
+
+1791471458 c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\\uteis.h
+	<iostream>
+	<time.h>
+
+1792686615 source:c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\src\aquario.cpp
+	"Aquario.h"
+
+1792686789 c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\include\aquario.h
+	<iostream>
+	<string>
+	<list>
+	"Peixe.h"
+
+1792687588 source:c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\src\tubarao.cpp
+	"Tubarao.h"
+
+1792687588 c:\users\fmorgado\onedrive\ambiente de trabalho\projecto_aquario\include\tubarao.h
+	"Peixe.h"
+
